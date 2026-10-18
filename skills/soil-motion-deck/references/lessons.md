@@ -19,6 +19,7 @@
 7. **影片封面的格式**：`addMedia({ type: "video", path, cover })` 的 `cover` 照 PptxGenJS 的寫法，用 `"image/png;base64,<資料>"`，前面不加 `data:`。這次用這個格式，PowerPoint 的縮圖正確顯示封面。
 8. **字型不會內嵌**：投影的電腦沒有源石黑體，就會退回系統字型。交付時要提醒使用者，或請他照 SOIL 的 F-0 安裝。
 9. **用 PowerPoint 本身輸出縮圖**（COM，唯讀開啟、不顯示視窗）才看得到真正的影片封面和字型；LibreOffice 的縮圖可能換掉字型，只能拿來看版面。
+14. **表格中文在 PowerPoint 編輯畫面變成方框**（後來的〈月相變化〉〈圓面積〉〈刻舟求劍〉三份都中）。比較頁的表格一打開就是一格格方框，數字照常顯示；同一頁的文字框正常，「另存成圖片」和 `thumbs.py` 的縮圖也正常，所以審查時完全沒發現。原因：PptxGenJS 把每個 run 的東亞字型寫成 `charset="-122"`（GB2312），表格格子的 `endParaRPr` 又寫成 `charset="0"`；源石黑體 TW 的 OS/2 字碼頁只宣告 Big5。實測：表格用微軟正黑體或不指定字型都正常；只把 charset 改成 Big5 沒用；拿掉 run 或 `endParaRPr` 任一邊的 charset 就正常。修法是存檔時拿掉所有字型標籤的 `charset`／`pitchFamily`（DrawingML 裡是選填）：`D.save()` 自動處理，其他情況用 `scripts/fix_cjk_fonts.py`，而且要放在所有改寫 XML 的步驟之後。
 
 ## 影片（同時寫進 motion-explainer 的 lessons.md）
 
