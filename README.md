@@ -69,6 +69,7 @@ Agent 會先問科目、對象、時間、要哪幾份成品和配色，接著�
 | `scripts/make_silent.py` | 複製影片專案，拿掉旁白和字幕，做成「靜音孿生版」 |
 | `scripts/cut_clips.py` | 讀每一格的時間，自動剪出每個 🎬 頁的片段，避開和前後格重疊的轉場，另外輸出封面 PNG |
 | `scripts/thumbs.py`、`export_thumbs.ps1` | 把每頁投影片輸出成 PNG，再拼成總覽圖（Windows 用 PowerPoint，其他系統用 LibreOffice） |
+| `scripts/fix_cjk_fonts.py` | 拿掉 PptxGenJS 寫在字型標籤上的字元集提示，修好 PowerPoint 編輯畫面裡表格中文變成方框的問題；`--check` 用來審查（`deck_helpers.js` 的 `D.save()` 已自動處理） |
 | `templates/package.json` | 簡報資料夾用的 Node 設定（CommonJS + PptxGenJS 3.12.0） |
 | `templates/deck_helpers.js` | PptxGenJS 的共用元件：深色／淺色頁、角色徽章、標題、卡片、動畫播放視窗 |
 | `templates/example_pythagoras.js` | 〈畢氏定理〉13 頁的完整範例 |

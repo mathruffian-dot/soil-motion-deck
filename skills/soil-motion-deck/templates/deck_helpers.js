@@ -7,6 +7,7 @@
 //   const pptx = new pptxgen(); pptx.layout = "LAYOUT_WIDE";
 //   const D = makeDeck(pptx, { theme: { bg: "121212", fg: "F2F0EA", accent: "FF7A1A" }, mediaDir: __dirname + "/media" });
 //   const s = D.lightSlide("流程・動畫"); D.title(s, "為什麼一定成立？"); D.video(s, "p06", 0.6, 2.0, 8.0);
+//   D.save(path.join(__dirname, "單元名稱.pptx"));   // not pptx.writeFile: see save() below
 const fs = require("fs");
 const path = require("path");
 
@@ -64,7 +65,25 @@ function makeDeck(pptx, opts = {}) {
     s.addText(head, { x: x + 0.25, y: y + 0.18, w: w - 0.5, h: 0.6, fontFace: H, fontSize: 24, color: color || C.ink });
     s.addText(body, { x: x + 0.25, y: y + 0.8, w: w - 0.5, h: h - 0.95, fontFace: M, fontSize: 18, color: C.ink, valign: "top" });
   }
-  return { C, H, M, badge, title, lightSlide, darkSlide, video, card };
+  // Write the deck, dropping the charset / pitchFamily hints PptxGenJS puts on every font tag.
+  // Without this, PowerPoint's editing view shows Chinese text in TABLE cells as tofu boxes when the font
+  // does not claim GB2312 (GenSeki TW claims only Big5): the run says charset GB2312, the cell's
+  // end-of-paragraph says ANSI. Text boxes and exported PNGs look fine, so thumbnails do not catch it.
+  // Same fix as scripts/fix_cjk_fonts.py (use that for decks written any other way).
+  async function save(fileName) {
+    const JSZip = require("jszip");
+    const zip = await JSZip.loadAsync(await pptx.write({ outputType: "nodebuffer" }));
+    for (const name of Object.keys(zip.files)) {
+      if (!/^ppt\/.*\.xml$/.test(name)) continue;
+      const xml = await zip.file(name).async("string");
+      const fixed = xml.replace(/<a:(?:latin|ea|cs|sym)\b[^>]*>/g, (tag) => tag.replace(/\s+(?:pitchFamily|charset)="[^"]*"/g, ""));
+      if (fixed !== xml) zip.file(name, fixed);
+    }
+    fs.writeFileSync(fileName, await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" }));
+    console.log("wrote", fileName);
+    return fileName;
+  }
+  return { C, H, M, badge, title, lightSlide, darkSlide, video, card, save };
 }
 
 module.exports = { makeDeck };
