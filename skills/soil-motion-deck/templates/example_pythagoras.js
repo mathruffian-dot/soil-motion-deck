@@ -186,4 +186,4 @@ function triangle(s, x, y, ww, hh, labels) {
   s.addNotes("請學生不看螢幕，把這句話說一次。");
 }
 
-pptx.writeFile({ fileName: path.join(__dirname, "畢氏定理_SOIL動畫版.pptx") }).then((f) => console.log("wrote", f));
+D.save(path.join(__dirname, "畢氏定理_SOIL動畫版.pptx"));
